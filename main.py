@@ -13,8 +13,8 @@ def gpt(url: str):
     response = http.request('GET', url)
     pdf_contents = pts.PdfToString(response.data)
     item = make_sample(pdf_contents)
-    preprocess(item)
-    return {"item": item}
+    itmes = preprocess(item)
+    return {"item": itmes}
 
 
 @app.get("/summary")
@@ -28,8 +28,8 @@ def gpt(url: str):
 async def create_file(file: bytes = File()):
     pdf_contents = pts.PdfToString(file)
     items = make_sample(pdf_contents)
-    preprocess(items)
-    return {"item": item}
+    itmes = preprocess(items)
+    return {"item": itmes}
 
 @app.post("/summary_file")
 async def create_file2(file: bytes = File()):
