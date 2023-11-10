@@ -24,7 +24,6 @@ def preprocess(items):
     for i in range(len(result)):
         if i % 2 == 0:
             question = result[i].split("\n")[0]
-            all_questions.append(question)
             choices = result[i].split("\n")[1:]
             for j in range(len(choices)):
                 choices[j] = re.split(r"\d. ", choices[j])[1].replace("\n", "")
