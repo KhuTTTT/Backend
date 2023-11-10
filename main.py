@@ -118,6 +118,33 @@ async def get_questions(id1: str, id2:str, id3:str):
     data = getquestions(id1, id2, id3)
     return {"question": data}
 
+@app.get("/document/{id}")
+async def get_document(id):
+    datas = getbydocument(id)
+    input_list = []
+    for data in datas:
+        input_list.append(data["id"])
+    
+    questions = getquestions(input_list)
+    answers = getanswers(input_list)
+    wrongs = getwrongs(input_list)
+    return_json = {}    
+
+    for id in input_list:
+        for i in questions:
+            if id == i["id"]:
+                i["answer"] = []
+                i["wrong"] = []
+                for j in answers:
+                    if id == j["question_id"]:
+                        i["answer"].append(j["answer"])
+                for k in wrongs:
+                    if id == k["question_id"]:
+                        i["wrong"].append(k["wrong"])
+                return_json[id] = i
+
+    return {"input": return_json}
+
 @app.get("/answerandwrong/{id}")
 async def getanswerandwrong(id):
     answer = getanswer(id)
@@ -126,15 +153,39 @@ async def getanswerandwrong(id):
     #print(wrong)
     return {"answer": answer, "wrong" : wrong}
 
-@app.get("/documents/{id}")
-async def get_document(id):
-    data = getdocument(id)
-    return {"document": data}
-
 @app.get("/randomquestion")
 async def get_random_question():
     data = getrandomquestion()
     number_list = random.sample(data, 3)
+    input_list = []
+
+    for i in number_list:
+        input_list.append(i["id"])
+
+    questions = getquestions(input_list)
+    answers = getanswers(input_list)
+    wrongs = getwrongs(input_list)
+    return_json = {}    
+
+    for id in input_list:
+        for i in questions:
+            if id == i["id"]:
+                i["answer"] = []
+                i["wrong"] = []
+                for j in answers:
+                    if id == j["question_id"]:
+                        i["answer"].append(j["answer"])
+                for k in wrongs:
+                    if id == k["question_id"]:
+                        i["wrong"].append(k["wrong"])
+                return_json[id] = i
+
+    return {"input": return_json}
+
+@app.get("/randomquestion5")
+async def get_random_question5():
+    data = getrandomquestion()
+    number_list = random.sample(data, 5)
     input_list = []
 
     for i in number_list:
