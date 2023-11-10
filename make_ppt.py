@@ -89,8 +89,8 @@ class PPT:
 
 
         """논문 작성에 참조된 논문 리스트 뽑아오기"""
-        #reference_list = summary_string.split("\n")
-        #reference_data = reference.get_reference(reference_list)
+        reference_list = summary_string.split("\n")
+        reference_data = reference.get_reference(reference_list)
         
         summary_string = make_quizz.summary(summary_string)
         summary_string_list = summary_string.split("\n\n")
@@ -116,7 +116,7 @@ class PPT:
                 self.add_content_slide(data[0], data[1], i)
         
         self.add_image_slide("wordcloud",wordcloud_image_name,9)
-        #self.add_content_slide("References", '\n'.join(reference_data[1]), 10)
+        self.add_content_slide("References", '\n'.join(reference_data[1]), 10)
 
         supabase.storage.from_("url").upload(file=title_name, path=title_name, file_options={"content-type": "image/png"})
         title_image = supabase.storage.from_('url').get_public_url(title_name)
