@@ -13,6 +13,9 @@ from make_ppt import PPT
 from io import BytesIO
 from service import *
 import random
+import concurrent.futures
+import asyncio
+
 
 http = urllib3.PoolManager()
 app = FastAPI()
@@ -34,14 +37,38 @@ async def gpt_summary(url: str):
     item = summary(pdf_contents)
     return {"item": item}
 
+@app.post("/create_file_and_ppt")
+async def create_file_and_ppt(file: bytes = File()):
+    file_result, ppt_result = await asyncio.gather(create_file(file), create_ppt(file))
+    return {"file_result": file_result, "ppt_result": ppt_result}
+
 
 ## 파일로 문제들 만들기
 @app.post("/create_file")
 async def create_file(file: bytes = File()):
     pdf_contents = pts.PdfToString(file)
     items = generate_question(pdf_contents)
-    itmes = preprocess(items)
-    return {"item": itmes}
+    input_list = preprocess(items)
+
+    questions = getquestions(input_list)
+    answers = getanswers(input_list)
+    wrongs = getwrongs(input_list)
+    return_json = {}    
+
+    for id in input_list:
+        for i in questions:
+            if id == i["id"]:
+                i["answer"] = []
+                i["wrong"] = []
+                for j in answers:
+                    if id == j["question_id"]:
+                        i["answer"].append(j["answer"])
+                for k in wrongs:
+                    if id == k["question_id"]:
+                        i["wrong"].append(k["wrong"])
+                return_json[id] = i
+
+    return {"input": return_json}
 
 ## 파일로 요약문 만들기
 @app.post("/summary_file")
@@ -63,6 +90,7 @@ async def register(file: bytes = File()):
     items = generate_question(pdf_contents)
     itmes = preprocess(items)
     ppt = ppt_generator.create_presentation(file)
+
     return {"item": itmes}
 
 @app.get("/questions/all")
@@ -84,8 +112,8 @@ async def get_questions(id1: str, id2:str, id3:str):
 async def getanswerandwrong(id):
     answer = getanswer(id)
     wrong = getwrong(id)
-    print(answer)
-    print(wrong)
+    #print(answer)
+    #print(wrong)
     return {"answer": answer, "wrong" : wrong}
 
 @app.get("/documents/{id}")
@@ -120,4 +148,4 @@ async def get_random_question():
                         i["wrong"].append(k["wrong"])
                 return_json[id] = i
 
-        return {"input": return_json}
+    return {"input": return_json}
