@@ -3,7 +3,13 @@ from make_quizz import make_sample, summary
 import openai
 import pts
 import urllib3
+import make_quizz
 from preprocessing import preprocess
+from pptx import Presentation
+from pptx.util import Inches, Pt
+from pptx.enum.text import PP_ALIGN
+from pptx.dml.color import RGBColor
+from make_ppt import PPT
 
 http = urllib3.PoolManager()
 app = FastAPI()
@@ -15,7 +21,6 @@ def gpt(url: str):
     item = make_sample(pdf_contents)
     itmes = preprocess(item)
     return {"item": itmes}
-
 
 @app.get("/summary")
 def gpt(url: str):
@@ -37,3 +42,9 @@ async def create_file2(file: bytes = File()):
     item = summary(pdf_contents)
     return {"item": item}
 
+@app.post("/ppt")
+async def create_ppt(url: str):
+    response = http.request('GET', url)
+    ppt_generator = PPT()
+    ppt = ppt_generator.create_presentation(response.data)
+    return {"ppt": ppt}
