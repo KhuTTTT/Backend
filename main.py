@@ -1,5 +1,5 @@
 from fastapi import FastAPI, File, UploadFile
-from make_quizz import make_sample, summary
+from make_quizz import generate_question, summary
 import openai
 import pts
 import urllib3
@@ -18,7 +18,7 @@ app = FastAPI()
 def gpt(url: str):
     response = http.request('GET', url)
     pdf_contents = pts.PdfToString(response.data)
-    item = make_sample(pdf_contents)
+    item = generate_question(pdf_contents)
     itmes = preprocess(item)
     return {"item": itmes}
 
@@ -32,7 +32,7 @@ def gpt(url: str):
 @app.post("/make_sample_file")
 async def create_file(file: bytes = File()):
     pdf_contents = pts.PdfToString(file)
-    items = make_sample(pdf_contents)
+    items = generate_question(pdf_contents)
     itmes = preprocess(items)
     return {"item": itmes}
 
