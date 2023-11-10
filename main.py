@@ -1,4 +1,5 @@
 from fastapi import FastAPI, File, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 from make_quizz import *
 import openai
 import pts
@@ -19,6 +20,14 @@ import asyncio
 
 http = urllib3.PoolManager()
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 ##URL 로 문제들 만들기
 @app.get("/make_sample")
