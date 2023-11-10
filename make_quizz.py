@@ -1,9 +1,22 @@
 import openai
+import pts
+import os
+from dotenv import load_dotenv
 
-OPENAI_API_KEY = "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"
-openai.api_key = OPENAI_API_KEY
+load_dotenv()
+openai.api_key = os.environ.get("OPENAI_API_KEY")
 
-def make_sample(contents):
+def string_prepeocess(quizz):
+    quizz_list = quizz.split("\n")
+    question_no = ['A1:','A2:','A3:','A4:','A5:','A6:','A7:','A8:']
+    for i in range(len(quizz_list)):
+        #print(quizz_list[i])
+        for j in question_no:
+            if j in quizz_list[i]:
+                quizz_list[i] = quizz_list[i][:5]
+    return '\n'.join(quizz_list)
+
+def generate_question(contents):
     print("지피티 실행!")
     model = "gpt-3.5-turbo"
     # 질문 작성하기
@@ -11,16 +24,83 @@ def make_sample(contents):
     query = sentence_type+contents
     print("쿼리")
     # 메시지 설정하기
-    print(query)
+    #print(query)
     messages = [
-            {"role": "system", "content": """You are a college professor teaching students through a given text. You must write a five-choice test question based on the concepts in the given text. Please provide appropriate test questions. Please also provide answers to the test questions.
+            {"role": "system", "content": """You are a college professor teaching students through a given text. You must write a five-choice test question based on the concepts in the given text. Please provide appropriate 8 test questions. Please also provide answers to the test questions.
 The output format is as follows.
 Output Format:
-
 Q1: content of question1
-A1: content of answer1 as single number
+1. Option1 of Q1
+2. Option2 of Q1
+3. Option3 of Q1
+4. Option4 of Q1
+5. Option5 of Q1
 
-...."""},
+A1: answer number of Q1
+             
+Q2: content of question2
+1. Option1 of Q2
+2. Option2 of Q2
+3. Option3 of Q2
+4. Option4 of Q2
+5. Option5 of Q2
+
+A2: answer number of Q2
+             
+Q3: content of question3
+1. Option1 of Q3
+2. Option2 of Q3
+3. Option3 of Q3
+4. Option4 of Q3
+5. Option5 of Q3
+
+A3: answer number of Q3
+             
+Q4: content of question4
+1. Option1 of Q4
+2. Option2 of Q4
+3. Option3 of Q4
+4. Option4 of Q4
+5. Option5 of Q4
+
+A4: answer number of Q4
+             
+Q5: content of question5
+1. Option1 of Q5
+2. Option2 of Q5
+3. Option3 of Q5
+4. Option4 of Q5
+5. Option5 of Q5
+
+A5: answer number of Q5
+             
+Q6: content of question6
+1. Option1 of Q6
+2. Option2 of Q6
+3. Option3 of Q6
+4. Option4 of Q6
+5. Option5 of Q6
+
+A6: answer number of Q6
+             
+Q7: content of question7
+1. Option1 of Q7
+2. Option2 of Q7
+3. Option3 of Q7
+4. Option4 of Q7
+5. Option5 of Q7
+
+A7: answer number of Q7
+             
+Q8: content of question8
+1. Option1 of Q8
+2. Option2 of Q8
+3. Option3 of Q8
+4. Option4 of Q8
+5. Option5 of Q8
+
+A8: answer number of Q8
+"""},
             {"role": "user", "content": query}
     ]
 
@@ -31,6 +111,7 @@ A1: content of answer1 as single number
     )
     print("호출 성공")
     answer = response['choices'][0]['message']['content']
+    answer = string_prepeocess(answer)
     return answer
 
 
@@ -42,7 +123,7 @@ def summary(contents):
     query = sentence_type+contents
     print("쿼리")
     # 메시지 설정하기
-    print(query)
+    #print(query)
     messages = [
             {"role": "system", "content": """You are a graduate student. I have to read the paper and summarize it. Given text, your job is to summarize that text with text extracted from the paper. It must be printed in the format below.
 
@@ -74,4 +155,3 @@ Conclusion: content of conclusion"""},
     print("호출 성공")
     answer = response['choices'][0]['message']['content']
     return answer
-
