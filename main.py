@@ -96,9 +96,10 @@ async def create_ppt(file: bytes = File()):
 @app.post("/register")
 async def register(file: bytes = File()):
     pdf_contents = pts.PdfToString(file)
-    items = generate_question(pdf_contents)
-    itmes = preprocess(items)
+    ppt_generator = PPT()
     ppt = ppt_generator.create_presentation(file)
+    items = generate_question(pdf_contents)
+    itmes = preprocess(items, ppt["document_id"])
 
     return {"item": itmes}
 
