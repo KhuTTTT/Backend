@@ -2,6 +2,8 @@ from pptx import Presentation
 from pptx.util import Inches, Pt
 from pptx.enum.text import PP_ALIGN
 from pptx.dml.color import RGBColor
+from pptx.enum.shapes import MSO_SHAPE_TYPE
+from PIL import Image, ImageFont, ImageDraw
 import make_quizz
 import pts
 from dotenv import load_dotenv
@@ -11,12 +13,12 @@ import os
 from datetime import datetime
 import numpy as np
 import pandas as pd
-from PIL import Image
 from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
 import matplotlib.pyplot as plt
 import warnings
-
-
+from IPython.display import display
+import pptx
+import reference
 
 
 load_dotenv()
@@ -26,44 +28,45 @@ supabase: Client = create_client(url, key)
 
 class PPT:
     def __init__(self):
-        self.presentation = Presentation()
+        self.presentation = Presentation("template.pptx")
 
-    def add_title_slide(self, title):
-        title_slide_layout = self.presentation.slide_layouts[0]
-        title_slide = self.presentation.slides.add_slide(title_slide_layout)
-        title_shape = title_slide.shapes.title
-        title_shape.text = title
-        title_shape.text_frame.paragraphs[0].font.size = Pt(44)
-        title_shape.text_frame.paragraphs[0].font.bold = True
+    def add_title_slide(self, title_data):
+        slide = self.presentation.slides[0]
+        for shape, data in zip(slide.shapes, [title_data]):
+            if not shape.has_text_frame:
+                continue
+            shape.text_frame.text = data
+            for paragraph in shape.text_frame.paragraphs:
+                    for run in paragraph.runs:
+                        run.font.color.rgb = RGBColor(38, 38, 38)
+                        run.font.size = Pt(26)
+                        run.font.bold = True
 
-    def add_content_slide(self, title, content):
-        content_slide_layout = self.presentation.slide_layouts[1]
-        content_slide = self.presentation.slides.add_slide(content_slide_layout)
-        title_shape = content_slide.shapes.title
-        content_shape = content_slide.placeholders[1]
+    def add_content_slide(self, title_data, content_data, i):
+        slide = self.presentation.slides[i]
+        cnt = 0
+        for shape, data in zip(slide.shapes, [title_data,content_data]):
+            if not shape.has_text_frame:
+                continue
+            shape.text_frame.text = data
+            for paragraph in shape.text_frame.paragraphs:
+                    for run in paragraph.runs:
+                        run.font.size = Pt(26)
+                        if cnt==0:
+                            run.font.color.rgb = RGBColor(255, 255, 255)
+                            run.font.bold = True
+                            cnt+=1
+                        else:
+                            run.font.color.rgb = RGBColor(0, 0, 0)
+                            run.font.bold = False
 
-        title_shape.text = title
-        content_shape.text = content
-        title_shape.text_frame.paragraphs[0].font.size = Pt(32)
-        content_shape.text_frame.paragraphs[0].font.size = Pt(24)
-
-    def add_image_slide(self, title, image):
-        image_slide_layout = self.presentation.slide_layouts[5]
-        image_slide = self.presentation.slides.add_slide(image_slide_layout)
-        title_shape = image_slide.shapes.title
-
-        left = Inches(1.5)        # x좌표
-        top = Inches(1.8)        # y좌표
-        width = Inches(7)     # 이미지 가로 길이
-        height = Inches(5)  # 이미지 세로 길이
-
-        image_slide.shapes.add_picture(image, left, top, width, height)
-        title_shape.text = title
-        title_shape.text_frame.paragraphs[0].font.size = Pt(32)
+    def add_image_slide(self, title_data, img_path, i):
+        slide = self.presentation.slides[i]
+        cnt = 0
+        pic = slide.shapes.add_picture(img_path, pptx.util.Inches(2), pptx.util.Inches(2),width=pptx.util.Inches(9), height=pptx.util.Inches(5))
 
 
-    def create_presentation(self, path):
-        summary_string = pts.PdfToString(path)
+    def create_wordcloud(self, summary_string, name):
         wordcloud = WordCloud().generate(summary_string)
 
         plt.figure()
@@ -71,27 +74,46 @@ class PPT:
         plt.axis("off")
 
         # Save the plot to a file
-        timestamp = datetime.now().strftime("%Y%m%d%H%M%S%f")
-        output_file = f"{timestamp}.png"  # Specify your desired output file name and format
-        plt.savefig(output_file, bbox_inches='tight', pad_inches=0.2)
+        plt.savefig(name, bbox_inches='tight', pad_inches=0.2)
 
         # Optional: Close the plot to release resources (comment this line if you want to display the plot)
         plt.close()
 
-        supabase.storage.from_("url").upload(file=output_file, path=output_file, file_options={"content-type": "image/png"})
-        res_image = supabase.storage.from_('url').get_public_url(output_file)
+    def create_presentation(self, path):
+        summary_string = pts.PdfToString(path)
+        wordcloud_image_name = datetime.now().strftime("%Y%m%d%H%M%S%f") + f"{summary_string[:3]}.png"
+        self.create_wordcloud(summary_string, wordcloud_image_name)
 
+        supabase.storage.from_("url").upload(file=wordcloud_image_name, path=wordcloud_image_name, file_options={"content-type": "image/png"})
+        res_image = supabase.storage.from_('url').get_public_url(wordcloud_image_name)
+
+
+        """논문 작성에 참조된 논문 리스트 뽑아오기"""
+        #reference_list = summary_string.split("\n")
+        #reference_data = reference.get_reference(reference_list)
+        
         summary_string = make_quizz.summary(summary_string)
         summary_string_list = summary_string.split("\n\n")
 
-        for i in range(len(summary_string_list)+1):
+        title_name = ""
+        for i in range(len(summary_string_list)):
             if i == 0:
                 self.add_title_slide(summary_string_list[i].split(": ")[1])
+                img = Image.open("background.png")
+                draw = ImageDraw.Draw(img)
+                draw.text((0,10), summary_string_list[i].split(": ")[1], (0,0,0))
+                draw = ImageDraw.Draw(img)
+                title_name = datetime.now().strftime("%Y%m%d%H%M%S%f") + ".png"
+                img.save(title_name)
             elif i > 0 and i < len(summary_string_list):
                 data = summary_string_list[i].split(": ")
-                self.add_content_slide(data[0], data[1])
-            else:
-                self.add_image_slide("WordCloud", output_file)
+                self.add_content_slide(data[0], data[1], i)
+        
+        self.add_image_slide("wordcloud",wordcloud_image_name,9)
+        #self.add_content_slide("References", '\n'.join(reference_data[1]), 10)
+
+        supabase.storage.from_("url").upload(file=title_name, path=title_name, file_options={"content-type": "image/png"})
+        title_image = supabase.storage.from_('url').get_public_url(title_name)
 
         timestamp1 = datetime.now().strftime("%Y%m%d%H%M%S%f")
         name = f"{timestamp1}.pptx"
@@ -100,7 +122,7 @@ class PPT:
         supabase.storage.from_("url").upload(file=name, path=name, file_options={"content-type": "application/vnd.ms-powerpoint"})
         res = supabase.storage.from_('url').get_public_url(name)
 
-        return {"res": res, "res_image": res_image}
+        return {"res": res, "res_image": res_image, "title_image": title_image}
 
 # Example usage:
 
