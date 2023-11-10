@@ -19,7 +19,7 @@ app = FastAPI()
 
 ##URL 로 문제들 만들기
 @app.get("/make_sample")
-def gpt_make_sample(url: str):
+async def gpt_make_sample(url: str):
     response = http.request('GET', url)
     pdf_contents = pts.PdfToString(response.data)
     item = generate_question(pdf_contents)
@@ -28,7 +28,7 @@ def gpt_make_sample(url: str):
 
 ##URL로 요약문 만들기
 @app.get("/summary")
-def gpt_summary(url: str):
+async def gpt_summary(url: str):
     response = http.request('GET', url)
     pdf_contents = pts.PdfToString(response.data)
     item = summary(pdf_contents)
@@ -50,13 +50,20 @@ async def summary_file(file: bytes = File()):
     item = summary(pdf_contents)
     return {"item": item}
 
-## 
+##ppt 만들기
 @app.post("/ppt")
-async def create_ppt(url: str):
-    response = http.request('GET', url)
+async def create_ppt(file: bytes = File()):
     ppt_generator = PPT()
-    ppt = ppt_generator.create_presentation(response.data)
-    return {"ppt": ppt}
+    ppt = ppt_generator.create_presentation(file)
+    return {"ppt": ppt["res"], "image": ppt["res_image"]}
+
+@app.post("/register")
+async def register(file: bytes = File()):
+    pdf_contents = pts.PdfToString(file)
+    items = generate_question(pdf_contents)
+    itmes = preprocess(items)
+    ppt = ppt_generator.create_presentation(file)
+    return {"item": itmes}
 
 @app.get("/questions/all")
 async def get_questions():
@@ -77,6 +84,8 @@ async def get_questions(id1: str, id2:str, id3:str):
 async def getanswerandwrong(id):
     answer = getanswer(id)
     wrong = getwrong(id)
+    print(answer)
+    print(wrong)
     return {"answer": answer, "wrong" : wrong}
 
 @app.get("/documents/{id}")
@@ -111,4 +120,4 @@ async def get_random_question():
                         i["wrong"].append(k["wrong"])
                 return_json[id] = i
 
-    return {"input": return_json}
+        return {"input": return_json}
