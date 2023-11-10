@@ -33,5 +33,8 @@ def getwrongs(id_list):
 def getdocument(id):
     return supabase.table("document").select("*").eq("id", id).execute().data
 
+def getbydocument(id):
+    return supabase.table("question").select("*").eq("document_id", id).execute().data
+
 def getrandomquestion():
     return supabase.table("question").select("id").execute().data
