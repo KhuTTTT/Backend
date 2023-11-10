@@ -7,7 +7,7 @@ import pts
 
 class PPT:
     def __init__(self):
-        self.presentation = Presentation()
+        self.presentation = Presentation("")
 
     def add_title_slide(self, title):
         title_slide_layout = self.presentation.slide_layouts[0]
