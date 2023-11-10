@@ -11,7 +11,7 @@ supabase: Client = create_client(url, key)
 all_questions = []
 
 
-def preprocess(items):
+def preprocess(items, document_id):
     #print(items)
     pattern = r"\n\n"
     result = re.split(pattern, items)
@@ -51,7 +51,7 @@ def preprocess(items):
             #print(return_wrong_choices)
 
             supabase.table("member").insert({"email": "sunwu5678@gmail.com", "password": "park13579@"}).execute()
-            question = supabase.table("question").insert({"question": return_title, "chapter": "7", "document_id":1, "subject_id":1}).execute()
+            question = supabase.table("question").insert({"question": return_title, "chapter": "7", "document_id":document_id, "subject_id":1}).execute()
             question_id = question.data[0]["id"]
             all_questions.append(question_id)
             for i in return_wrong_choices:
