@@ -1,6 +1,7 @@
 import re
 import os
 from dotenv import load_dotenv
+from io import BytesIO
 from supabase import create_client, Client
 
 load_dotenv()
@@ -8,6 +9,7 @@ url: str = os.environ.get("SUPABASE_URL")
 key: str = os.environ.get("SUPABASE_KEY")
 supabase: Client = create_client(url, key)
 all_questions = []
+
 
 def preprocess(items):
     #print(items)
