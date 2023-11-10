@@ -99,10 +99,11 @@ class PPT:
         for i in range(len(summary_string_list)):
             if i == 0:
                 self.add_title_slide(summary_string_list[i].split(": ")[1])
+                title_name = summary_string_list[i].split(": ")[1]
                 img = Image.open("background.png")
                 img_width, img_height = img.size
                 draw = ImageDraw.Draw(img)
-                font_size = 30
+                font_size = 25
                 font = ImageFont.truetype("NanumGothic.ttf", font_size)
                 text_width = draw.textlength(summary_string_list[i].split(": ")[1], font)
                 x = (img_width-text_width)//2
@@ -128,9 +129,9 @@ class PPT:
         supabase.storage.from_("url").upload(file=name, path=name, file_options={"content-type": "application/vnd.ms-powerpoint"})
         res = supabase.storage.from_('url').get_public_url(name)
 
-        
+        document_id = supabase.table("document").insert({"name": title_name, "summary": res, "word_image_url": res_image, "title_image": title_image}).execute()
 
-        return {"ppt": res, "res_image": res_image, "title_image": title_image}
+        return {"res": res, "res_image": res_image, "title_image": title_image, "document_id": document_id.data[0]["id"]}
 
 # Example usage:
 
