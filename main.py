@@ -111,5 +111,4 @@ async def get_random_question():
                         i["wrong"].append(k["wrong"])
                 return_json[id] = i
 
-    print(questions)
     return {"input": return_json}
