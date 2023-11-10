@@ -100,8 +100,14 @@ class PPT:
             if i == 0:
                 self.add_title_slide(summary_string_list[i].split(": ")[1])
                 img = Image.open("background.png")
+                img_width, img_height = img.size
                 draw = ImageDraw.Draw(img)
-                draw.text((0,10), summary_string_list[i].split(": ")[1], (0,0,0))
+                font_size = 30
+                font = ImageFont.truetype("NanumGothic.ttf", font_size)
+                text_width = draw.textlength(summary_string_list[i].split(": ")[1], font)
+                x = (img_width-text_width)//2
+                y = (img_height-font_size)//2
+                draw.text((x,y),summary_string_list[i].split(": ")[1], (0,0,0), font=font)
                 draw = ImageDraw.Draw(img)
                 title_name = datetime.now().strftime("%Y%m%d%H%M%S%f") + ".png"
                 img.save(title_name)
