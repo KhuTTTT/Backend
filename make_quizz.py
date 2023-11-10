@@ -20,13 +20,13 @@ def generate_question(contents):
     print("지피티 실행!")
     model = "gpt-3.5-turbo"
     # 질문 작성하기
-    sentence_type =  "[주어진 텍스트를 기반으로 5지 선다 문제를 10개 만들어줘.]"
+    sentence_type =  "[주어진 텍스트를 기반으로 5지 선다 문제를 5개 만들어줘.]"
     query = sentence_type+contents
     print("쿼리")
     # 메시지 설정하기
     #print(query)
     messages = [
-            {"role": "system", "content": """You are a college professor teaching students through a given text. You must write a five-choice test question based on the concepts in the given text. Please provide appropriate 8 test questions. Please also provide answers to the test questions.
+            {"role": "system", "content": """You are a college professor teaching students through a given text. You must write a five-choice test question based on the concepts in the given text. Please provide appropriate 5 test questions. Please also provide answers to the test questions.
 The output format is as follows.
 Output Format:
 Q1: content of question1
@@ -73,33 +73,6 @@ Q5: content of question5
 5. Option5 of Q5
 
 A5: answer number of Q5
-             
-Q6: content of question6
-1. Option1 of Q6
-2. Option2 of Q6
-3. Option3 of Q6
-4. Option4 of Q6
-5. Option5 of Q6
-
-A6: answer number of Q6
-             
-Q7: content of question7
-1. Option1 of Q7
-2. Option2 of Q7
-3. Option3 of Q7
-4. Option4 of Q7
-5. Option5 of Q7
-
-A7: answer number of Q7
-             
-Q8: content of question8
-1. Option1 of Q8
-2. Option2 of Q8
-3. Option3 of Q8
-4. Option4 of Q8
-5. Option5 of Q8
-
-A8: answer number of Q8
 """},
             {"role": "user", "content": query}
     ]
