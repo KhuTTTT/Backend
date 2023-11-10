@@ -7,7 +7,7 @@ def PdfToString(path):
     number_of_pages = len(reader.pages)
     page = reader.pages[0]
     text = ""
-    for i in range(10):
+    for i in range(4):
         page = reader.pages[i]
         text += page.extract_text()
     return text
