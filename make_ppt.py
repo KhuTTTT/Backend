@@ -128,7 +128,9 @@ class PPT:
         supabase.storage.from_("url").upload(file=name, path=name, file_options={"content-type": "application/vnd.ms-powerpoint"})
         res = supabase.storage.from_('url').get_public_url(name)
 
-        return {"res": res, "res_image": res_image, "title_image": title_image}
+        
+
+        return {"ppt": res, "res_image": res_image, "title_image": title_image}
 
 # Example usage:
 
