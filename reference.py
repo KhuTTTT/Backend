@@ -2,7 +2,6 @@ import pts
 import requests
 from bs4 import BeautifulSoup
 import urllib.parse
-from selenium import webdriver
 import time
 
 def get_reference(data):
@@ -32,26 +31,29 @@ def get_reference(data):
         if idx!=-1:
             reference_list[i] = reference_list[i][idx+2:]
 
-    options = webdriver.ChromeOptions()
-    options.add_argument("headless")
-    chrome_driver_path = "./chromedriver.exe"
-    service = webdriver.chrome.service.Service(chrome_driver_path)
-    driver = webdriver.Chrome(service=service, options=options)
-
     reference_list = reference_list[:reference_lenght]
 
     for i in range(reference_lenght):
         url = 'https://www.google.com/search?q='+reference_list[i]
-        driver.get(url)
+        params = {
+            'client': 'chrome',
+            'q': 'Attention is all you need'  # 원하는 검색어로 변경
+        }
 
-        html = driver.page_source
-        soup = BeautifulSoup(html)
+        response = requests.get(url, params=params)
 
-        result = soup.select('.tF2Cxc')  #원하는 class / name을 F12에서 찾기 # select 는 list로 가져온다. #클래스는 앞에 . 점 붙여준다.
+        if response.status_code == 200:
+            html = response.content
+            soup = BeautifulSoup(html, 'html.parser')
+            result = soup.select('div.egMi0.kCrYT')
 
-        for j in result :  
-            if 'https://arxiv.org/' in j.a.attrs['href']:
-                reference_url_list.append(j.a.attrs['href'])
-                break
-    driver.close()
+            for i in result :  
+                if 'https://arxiv.org/' in i.a.attrs['href']:
+                    temp_href = i.a.attrs['href']
+                    temp_href_delete_idx = temp_href.find("&")
+                    reference_url_list.append(i.a.attrs['href'][7:temp_href_delete_idx])
+                    break
+        else:
+            print(f"Failed to retrieve suggestions. Status code: {response.status_code}")
+
     return reference_list, reference_url_list
