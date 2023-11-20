@@ -54,11 +54,11 @@ async def create_file_and_ppt(file: bytes = File()):
 
 ## 파일로 문제들 만들기
 @app.post("/create_file")
-async def create_file(file: bytes = File()):
+async def create_file(file: bytes = File(), name: str = None):
     pdf_contents = pts.PdfToString(file)
     items = generate_question(pdf_contents)
-    input_list = preprocess(items)
-
+    id = post_document(name)
+    input_list = preprocess(items, id[0]['id'])
     questions = getquestions(input_list)
     answers = getanswers(input_list)
     wrongs = getwrongs(input_list)

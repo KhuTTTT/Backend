@@ -1,7 +1,0 @@
-pip install supabase
-pip install python-dotenv
-pip install urllib3
-pip install openai
-pip install fastapi
-pip install uvicorn
-pip install pypdf

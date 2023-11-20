@@ -38,3 +38,8 @@ def getbydocument(id):
 
 def getrandomquestion():
     return supabase.table("question").select("id").execute().data
+
+def post_document(name):
+    return supabase.table("document").insert({"name": name}).execute().data
+
+
